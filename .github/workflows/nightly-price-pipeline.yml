@@ -1,0 +1,63 @@
+name: Nightly price pipeline
+
+# The DAG: fetch -> validate -> store -> retrain -> publish. Each job step
+# runs only if the previous one succeeded (GitHub Actions' default
+# behavior) — a failed fetch/validate stops the pipeline before it ever
+# touches the model, so a bad or empty pull can't silently retrain on
+# nothing.
+#
+# Runs nightly at 18:00 UTC = 11:30pm IST, matching the existing Agmarknet
+# pull window. workflow_dispatch lets us trigger it manually to test.
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch, validate, and store tonight's real prices
+        id: fetch
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST "$SUPABASE_URL/functions/v1/refresh-mandi-prices" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+          echo "HTTP status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" != "200" ]; then
+            echo "::error::refresh-mandi-prices returned HTTP $http_code — stopping the pipeline."
+            exit 1
+          fi
+          if echo "$body" | grep -q '"error"'; then
+            echo "::error::refresh-mandi-prices reported an error — stopping the pipeline."
+            exit 1
+          fi
+          inserted=$(echo "$body" | grep -o '"inserted":[0-9]*' | grep -o '[0-9]*')
+          if [ -z "$inserted" ] || [ "$inserted" -eq 0 ]; then
+            echo "::error::0 rows inserted (likely rate-limited or no new data) — stopping before retraining on stale data."
+            exit 1
+          fi
+          echo "Stored $inserted real price rows for tonight."
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install retrain dependencies
+        run: pip install pandas scikit-learn requests numpy
+
+      - name: Retrain and publish models
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python ml/retrain_nightly.py

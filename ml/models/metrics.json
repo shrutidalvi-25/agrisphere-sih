@@ -1,0 +1,86 @@
+{
+  "Onion": {
+    "crop": "Onion",
+    "train_rows": 216413,
+    "val_rows": 54977,
+    "mae": 160.3,
+    "rmse": 405.38,
+    "mape_percent": 10.37,
+    "r2": 0.9309,
+    "data_range": "2023-06-13 to 2025-06-10",
+    "validation_start": "2025-02-21",
+    "feature_columns": [
+      "lag_1",
+      "lag_3",
+      "lag_7",
+      "rolling_mean_7",
+      "rolling_mean_14",
+      "day_of_week",
+      "month",
+      "is_maharashtra"
+    ]
+  },
+  "Potato": {
+    "crop": "Potato",
+    "train_rows": 256224,
+    "val_rows": 53550,
+    "mae": 103.9,
+    "rmse": 278.41,
+    "mape_percent": 6.29,
+    "r2": 0.9608,
+    "data_range": "2023-06-13 to 2025-06-10",
+    "validation_start": "2025-02-21",
+    "feature_columns": [
+      "lag_1",
+      "lag_3",
+      "lag_7",
+      "rolling_mean_7",
+      "rolling_mean_14",
+      "day_of_week",
+      "month",
+      "is_maharashtra"
+    ]
+  },
+  "Tomato": {
+    "crop": "Tomato",
+    "train_rows": 20474,
+    "val_rows": 1137,
+    "mae": 286.14,
+    "rmse": 461.11,
+    "mape_percent": 14.42,
+    "r2": 0.7369,
+    "data_range": "2023-06-13 to 2023-11-05",
+    "validation_start": "2023-10-15",
+    "feature_columns": [
+      "lag_1",
+      "lag_3",
+      "lag_7",
+      "rolling_mean_7",
+      "rolling_mean_14",
+      "day_of_week",
+      "month",
+      "is_maharashtra"
+    ]
+  },
+  "Wheat": {
+    "crop": "Wheat",
+    "train_rows": 59328,
+    "val_rows": 7894,
+    "mae": 65.98,
+    "rmse": 116.24,
+    "mape_percent": 2.59,
+    "r2": 0.716,
+    "data_range": "2023-06-13 to 2024-02-05",
+    "validation_start": "2024-01-01",
+    "feature_columns": [
+      "lag_1",
+      "lag_3",
+      "lag_7",
+      "rolling_mean_7",
+      "rolling_mean_14",
+      "day_of_week",
+      "month",
+      "is_maharashtra"
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  /* Farmer-friendly palette: green (trust, growth) + gold (value/money) + cream (warm, not clinical) */
+  --color-primary-50: #f1f8ec;
+  --color-primary-100: #dcefce;
+  --color-primary-200: #b8dfa1;
+  --color-primary-500: #4c9a2a;
+  --color-primary-600: #3c7f20;
+  --color-primary-700: #2e6318;
+  --color-primary-800: #234c12;
+
+  --color-gold-50: #fbf0d9;
+  --color-gold-100: #f5e0b3;
+  --color-gold-500: #c9972e;
+  --color-gold-600: #b8860b;
+  --color-gold-700: #8a660a;
+
+  --color-cream: #faf6ec;
+  --color-cream-dark: #f2ead9;
+}
+
+html {
+  /* Base font size a notch larger than default — easier to read for anyone,
+     essential for a farmer on a small/cheap phone screen. */
+  font-size: 17px;
+}
+
+body {
+  background-color: var(--color-cream);
+}
