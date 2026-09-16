@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './features/auth/AuthContext'
+import { AuthProvider, useAuth } from './features/auth/AuthContext'
 import { ProtectedRoute } from './features/auth/ProtectedRoute'
 import { LoginSignup } from './features/auth/LoginSignup'
+import { LandingPage } from './features/auth/LandingPage'
 import { RoleHome } from './features/auth/RoleHome'
 import { PriceDashboard } from './features/price-intel/PriceDashboard'
 import { CreateLot } from './features/lot-grading/CreateLot'
@@ -12,6 +13,24 @@ import { PoolLots } from './features/fpo/PoolLots'
 import { Payments } from './features/payments/Payments'
 import { VerificationQueue } from './features/admin/VerificationQueue'
 import { AdminDashboard } from './features/admin/AdminDashboard'
+import { MyComplaints } from './features/complaints/MyComplaints'
+import { AdminComplaints } from './features/complaints/AdminComplaints'
+
+// "/" serves the public marketing page to a signed-out visitor, and the
+// farmer-friendly dashboard to a signed-in user — same route either way, so
+// every existing `<Link to="/">` back-button throughout the app (used on
+// nearly every screen) keeps working unchanged for logged-in users.
+function HomeGate() {
+  const { session, loading } = useAuth()
+  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>
+  return session ? (
+    <ProtectedRoute allow={['farmer', 'buyer', 'fpo', 'admin']}>
+      <RoleHome />
+    </ProtectedRoute>
+  ) : (
+    <LandingPage />
+  )
+}
 
 export default function App() {
   return (
@@ -19,14 +38,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginSignup />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute allow={['farmer', 'buyer', 'fpo', 'admin']}>
-                <RoleHome />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={<HomeGate />} />
           <Route
             path="/prices"
             element={
@@ -96,6 +108,22 @@ export default function App() {
             element={
               <ProtectedRoute allow={['admin']}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/complaints"
+            element={
+              <ProtectedRoute allow={['farmer', 'buyer']}>
+                <MyComplaints />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/complaints"
+            element={
+              <ProtectedRoute allow={['admin']}>
+                <AdminComplaints />
               </ProtectedRoute>
             }
           />

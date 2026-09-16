@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, IndianRupee, Check, ShieldCheck, Link2, Lock } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import { getMyPayments, markPaid, confirmReceived } from './paymentService'
+import { ReportButton } from '../complaints/ReportButton'
 
 const STATUS_STYLE = {
   pending: 'bg-gray-100 text-gray-600',
@@ -128,6 +129,14 @@ export function Payments() {
                 >
                   <ShieldCheck size={16} /> {busyId === payment.id ? t('payments.confirmingAnchoring') : t('payments.confirmReceived')}
                 </button>
+              )}
+
+              {payment.status !== 'disputed' && (
+                <ReportButton
+                  recordType="payment"
+                  recordId={payment.id}
+                  againstId={role === 'buyer' ? payment.offers.lots.farmer_id : payment.offers.buyer_id}
+                />
               )}
             </div>
           ))

@@ -1,20 +1,18 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Camera, Mic, MicOff, MapPin, Check } from 'lucide-react'
+import { ArrowLeft, Camera, Mic, MicOff, MapPin, MapPinOff, Check } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import { CROPS } from '../price-intel/sampleData'
 import { createLot } from './lotService'
+import { speechLocaleFor, nativeNameFor } from '../../locales/languageMeta'
+import { GlowEffect } from '../../components/core/glow-effect'
+import { TextMorph } from '../../components/core/text-morph'
 
 // Web Speech API is Chrome-only, which is fine for this hackathon build —
 // feature-detect and just hide the mic button everywhere else instead of
 // erroring, since a farmer on a non-Chrome browser can still type.
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-
-// Maps the app's own language switcher (LanguageSwitcher.jsx) to a Web
-// Speech API locale, so the mic listens in whatever language the farmer
-// already has the app set to, instead of being hardcoded to one language.
-const SPEECH_LOCALE = { mr: 'mr-IN', hi: 'hi-IN', en: 'en-IN' }
 
 export function CreateLot() {
   const { user } = useAuth()
@@ -27,28 +25,43 @@ export function CreateLot() {
   const [photoPreview, setPhotoPreview] = useState(null)
   const [location, setLocation] = useState(null)
   const [locating, setLocating] = useState(false)
+  const [locationDenied, setLocationDenied] = useState(false)
   const [listening, setListening] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
   const recognitionRef = useRef(null)
 
+  // Geotagging is automatic and tied to the photo itself, not a separate
+  // opt-in step — the moment a farmer adds a photo, we capture GPS right
+  // alongside it. There's no in-app toggle to turn this off. The browser
+  // still shows its own native "Allow location?" permission prompt the
+  // first time (that's an OS/browser-level control no web app can bypass
+  // or hide), but after that it's silent and automatic on every photo.
   function handlePhoto(e) {
     const file = e.target.files?.[0]
     if (!file) return
     setPhotoFile(file)
     setPhotoPreview(URL.createObjectURL(file))
+    captureLocation()
   }
 
   function captureLocation() {
-    if (!navigator.geolocation) return
+    if (!navigator.geolocation) {
+      setLocationDenied(true)
+      return
+    }
     setLocating(true)
+    setLocationDenied(false)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
         setLocating(false)
       },
-      () => setLocating(false),
+      () => {
+        setLocating(false)
+        setLocationDenied(true)
+      },
       { timeout: 8000 }
     )
   }
@@ -60,7 +73,7 @@ export function CreateLot() {
       return
     }
     const recognition = new SpeechRecognition()
-    recognition.lang = SPEECH_LOCALE[i18n.language] || 'en-IN'
+    recognition.lang = speechLocaleFor(i18n.language)
     recognition.interimResults = false
     recognition.onresult = (e) => {
       const transcript = e.results[0][0].transcript
@@ -179,6 +192,15 @@ export function CreateLot() {
             )}
             <input type="file" accept="image/*" capture="environment" onChange={handlePhoto} className="hidden" />
           </label>
+          {photoFile && (
+            <p className={`flex items-center gap-1 text-xs mt-1.5 ${locationDenied ? 'text-red-500' : 'text-gray-400'}`}>
+              {locationDenied ? (
+                <><MapPinOff size={12} /> {t('createLot.locationUnavailable')}</>
+              ) : (
+                <><MapPin size={12} /> {locating ? t('createLot.gettingLocation') : t('createLot.locationCaptured')}</>
+              )}
+            </p>
+          )}
         </div>
 
         <div>
@@ -205,29 +227,31 @@ export function CreateLot() {
           </div>
           {SpeechRecognition && i18n.language !== 'en' && (
             <p className="text-xs text-gray-400 mt-1">
-              {t('createLot.speakIn', { lang: i18n.language === 'mr' ? t('createLot.marathi') : t('createLot.hindi') })}
+              {t('createLot.speakIn', { lang: nativeNameFor(i18n.language) })}
             </p>
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={captureLocation}
-          className="w-full flex items-center justify-center gap-2 border-2 border-primary-100 rounded-2xl py-3 text-primary-700 font-semibold text-sm"
-        >
-          <MapPin size={18} />
-          {locating ? t('createLot.gettingLocation') : location ? t('createLot.locationCaptured') : t('createLot.addLocation')}
-        </button>
-
         {error && <p className="text-red-600 text-sm text-center">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full bg-gold-600 text-white rounded-2xl py-4 font-bold text-base disabled:opacity-60"
-        >
-          {submitting ? t('createLot.creating') : t('createLot.createLotBtn')}
-        </button>
+        <div className="relative group">
+          <GlowEffect
+            colors={['#b8860b', '#3c7f20', '#4c9a2a', '#c9972e']}
+            mode="colorShift"
+            blur="medium"
+            duration={4}
+            className={`rounded-2xl transition-opacity duration-300 ${
+              submitting ? 'opacity-90' : 'opacity-0 group-hover:opacity-80'
+            }`}
+          />
+          <button
+            type="submit"
+            disabled={submitting}
+            className="relative w-full bg-primary-700 text-white rounded-2xl py-4 font-bold text-base disabled:opacity-60"
+          >
+            <TextMorph>{submitting ? t('createLot.creating') : t('createLot.createLotBtn')}</TextMorph>
+          </button>
+        </div>
       </form>
     </div>
   )

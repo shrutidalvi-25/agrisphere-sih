@@ -13,7 +13,14 @@
     "toSignup": "खाता नहीं है? साइन अप करें",
     "toLogin": "पहले से खाता है? लॉग इन करें",
     "errorRequired": "ईमेल और पासवर्ड आवश्यक हैं।",
-    "errorName": "कृपया अपना नाम दर्ज करें।"
+    "errorName": "कृपया अपना नाम दर्ज करें।",
+    "errorEmailDomain": "कृपया Gmail, Yahoo, या Rediffmail ईमेल का उपयोग करें।",
+    "errorInvalidPhone": "कृपया 10 अंकों का सही भारतीय मोबाइल नंबर दर्ज करें।",
+    "errorInvalidAadhaar": "कृपया 12 अंकों का सही आधार नंबर दर्ज करें।",
+    "farmerIdOptional": "किसान आईडी (वैकल्पिक)",
+    "aadhaarId": "आधार नंबर",
+    "confirmPassword": "पासवर्ड की पुष्टि करें",
+    "errorPasswordMismatch": "पासवर्ड मेल नहीं खाते।"
   },
   "home": {
     "welcome": "स्वागत है",
@@ -34,7 +41,9 @@
     "myOffers": "मेरे ऑफ़र",
     "poolLots": "सदस्यों के लॉट्स एकत्र करें",
     "verificationQueue": "सत्यापन सूची",
-    "dashboard": "डैशबोर्ड"
+    "dashboard": "डैशबोर्ड",
+    "myComplaints": "मेरी शिकायतें",
+    "adminComplaints": "शिकायतें"
   },
   "common": {
     "loading": "लोड हो रहा है...",
@@ -78,7 +87,7 @@
     "hindi": "हिंदी",
     "gettingLocation": "स्थान प्राप्त हो रहा है...",
     "locationCaptured": "स्थान प्राप्त हुआ",
-    "addLocation": "मेरा स्थान जोड़ें (GPS)",
+    "locationUnavailable": "इस फोटो के लिए स्थान प्राप्त नहीं हो सका",
     "creating": "बनाया जा रहा है...",
     "createLotBtn": "लॉट बनाएं",
     "lotCreated": "लॉट बन गया!",
@@ -90,6 +99,9 @@
   "myLots": {
     "new": "नया",
     "noLotsYet": "अभी कोई लॉट नहीं है। अपना पहला लॉट बनाएं।",
+    "advisorTitle": "सलाहकार की सिफारिश",
+    "advisorButton": "सलाहकार की सिफारिश पाएं",
+    "advisorLoading": "सिफारिश ली जा रही है...",
     "locationAttached": "स्थान जोड़ा गया",
     "offersFromBuyers": "खरीदारों के ऑफ़र",
     "loadingOffers": "ऑफ़र लोड हो रहे हैं...",
@@ -186,6 +198,44 @@
     "lotsSection": "लॉट्स",
     "dealsSection": "ऑफ़र्स",
     "paymentsSection": "भुगतान",
-    "totalTransactedValue": "पूर्ण हुए सौदों का कुल मूल्य"
+    "totalTransactedValue": "पूर्ण हुए सौदों का कुल मूल्य",
+    "tabPending": "लंबित",
+    "tabVerified": "सत्यापित",
+    "tabFlagged": "फ़्लैग किए गए",
+    "tabAll": "सभी",
+    "searchPlaceholder": "नाम या फ़ोन से खोजें",
+    "allRoles": "सभी भूमिकाएँ",
+    "joinedOn": "शामिल होने की तारीख",
+    "flagReasonLabel": "कारण",
+    "flagReasonPlaceholder": "आप इस खाते को फ़्लैग क्यों कर रहे हैं?",
+    "confirmFlag": "फ़्लैग की पुष्टि करें",
+    "resetToPending": "लंबित पर वापस लाएं"
+  },
+  "complaints": {
+    "reportButton": "समस्या की रिपोर्ट करें",
+    "descriptionPlaceholder": "क्या हुआ बताएं...",
+    "submit": "शिकायत भेजें",
+    "submitting": "भेजा जा रहा है...",
+    "submitted": "शिकायत दर्ज हो गई — आप इसकी स्थिति 'मेरी शिकायतें' में देख सकते हैं।",
+    "category_payment_not_received": "भुगतान नहीं मिला",
+    "category_wrong_amount": "गलत राशि",
+    "category_misconduct": "दुर्व्यवहार",
+    "category_other": "अन्य",
+    "noComplaintsYet": "आपने अभी तक कोई शिकायत दर्ज नहीं की है।",
+    "noComplaintsInTab": "इस टैब में कोई शिकायत नहीं है।",
+    "resolutionLabel": "एडमिन का नोट",
+    "statusOpen": "खुली",
+    "statusInReview": "समीक्षा में",
+    "statusResolved": "सुलझाई गई",
+    "statusRejected": "अस्वीकृत",
+    "tabAll": "सभी",
+    "unknownParty": "अज्ञात",
+    "markInReview": "समीक्षा में डालें",
+    "resolutionPlaceholder": "यह कैसे सुलझाया गया, बताएं...",
+    "paymentActionNone": "भुगतान में बदलाव न करें",
+    "paymentActionRedo": "भुगतान को फिर से लंबित करें",
+    "paymentActionSideFarmer": "भुगतान को प्राप्त के रूप में चिह्नित करें (किसान के पक्ष में)",
+    "resolve": "सुलझाएं",
+    "reject": "अस्वीकार करें"
   }
 }

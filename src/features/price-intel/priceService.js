@@ -71,3 +71,40 @@ export async function getRankedPrices(crop) {
 
   return [...maharashtra, ...outOfState].sort((a, b) => b.netRealisation - a.netRealisation)
 }
+
+// Real day-by-day price history for the dashboard chart — one point per
+// real date, averaged across whichever mandis reported that day. No
+// fabricated fallback: a crop/window with no real rows just returns an
+// empty array and the chart shows an honest "not enough data yet" state,
+// same principle as sellHoldService.js's MIN_REAL_DAYS gate.
+export async function getPriceHistory(crop, days = 30) {
+  const cutoff = new Date()
+  cutoff.setDate(cutoff.getDate() - days)
+  const cutoffStr = cutoff.toISOString().slice(0, 10)
+
+  try {
+    const { data, error } = await supabase
+      .from('mandi_prices')
+      .select('date, modal_price')
+      .eq('crop', crop)
+      .gte('date', cutoffStr)
+      .order('date', { ascending: true })
+
+    if (!error && data && data.length > 0) {
+      const byDate = {}
+      for (const r of data) {
+        if (!byDate[r.date]) byDate[r.date] = []
+        byDate[r.date].push(Number(r.modal_price))
+      }
+      return Object.keys(byDate)
+        .sort()
+        .map((d) => ({
+          date: d,
+          price: Math.round(byDate[d].reduce((a, b) => a + b, 0) / byDate[d].length),
+        }))
+    }
+  } catch {
+    // fall through to empty — no fabricated chart data
+  }
+  return []
+}

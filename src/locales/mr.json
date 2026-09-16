@@ -13,7 +13,14 @@
     "toSignup": "खाते नाही? साइन अप करा",
     "toLogin": "आधीच खाते आहे? लॉग इन करा",
     "errorRequired": "ईमेल आणि पासवर्ड आवश्यक आहेत.",
-    "errorName": "कृपया तुमचे नाव टाका."
+    "errorName": "कृपया तुमचे नाव टाका.",
+    "errorEmailDomain": "कृपया Gmail, Yahoo, किंवा Rediffmail ईमेल वापरा.",
+    "errorInvalidPhone": "कृपया 10 अंकी योग्य भारतीय मोबाइल नंबर टाका.",
+    "errorInvalidAadhaar": "कृपया 12 अंकी योग्य आधार क्रमांक टाका.",
+    "farmerIdOptional": "शेतकरी आयडी (ऐच्छिक)",
+    "aadhaarId": "आधार क्रमांक",
+    "confirmPassword": "पासवर्डची पुष्टी करा",
+    "errorPasswordMismatch": "पासवर्ड जुळत नाहीत."
   },
   "home": {
     "welcome": "स्वागत आहे",
@@ -34,7 +41,9 @@
     "myOffers": "माझ्या ऑफर्स",
     "poolLots": "सदस्यांचे लॉट्स एकत्र करा",
     "verificationQueue": "पडताळणी रांग",
-    "dashboard": "डॅशबोर्ड"
+    "dashboard": "डॅशबोर्ड",
+    "myComplaints": "माझ्या तक्रारी",
+    "adminComplaints": "तक्रारी"
   },
   "common": {
     "loading": "लोड होत आहे...",
@@ -78,7 +87,7 @@
     "hindi": "हिंदी",
     "gettingLocation": "स्थान मिळवत आहे...",
     "locationCaptured": "स्थान मिळाले",
-    "addLocation": "माझे स्थान जोडा (GPS)",
+    "locationUnavailable": "या फोटोसाठी स्थान मिळू शकले नाही",
     "creating": "तयार करत आहे...",
     "createLotBtn": "लॉट तयार करा",
     "lotCreated": "लॉट तयार झाला!",
@@ -90,6 +99,9 @@
   "myLots": {
     "new": "नवीन",
     "noLotsYet": "अजून लॉट्स नाहीत. पहिला लॉट तयार करा.",
+    "advisorTitle": "सल्लागाराची शिफारस",
+    "advisorButton": "सल्लागाराची शिफारस मिळवा",
+    "advisorLoading": "शिफारस मिळवत आहे...",
     "locationAttached": "स्थान जोडले आहे",
     "offersFromBuyers": "खरेदीदारांकडून ऑफर्स",
     "loadingOffers": "ऑफर्स लोड होत आहेत...",
@@ -186,6 +198,44 @@
     "lotsSection": "लॉट्स",
     "dealsSection": "ऑफर्स",
     "paymentsSection": "पेमेंट्स",
-    "totalTransactedValue": "पूर्ण झालेल्या व्यवहारांचे एकूण मूल्य"
+    "totalTransactedValue": "पूर्ण झालेल्या व्यवहारांचे एकूण मूल्य",
+    "tabPending": "प्रलंबित",
+    "tabVerified": "पडताळणी झालेले",
+    "tabFlagged": "फ्लॅग केलेले",
+    "tabAll": "सर्व",
+    "searchPlaceholder": "नाव किंवा फोनने शोधा",
+    "allRoles": "सर्व भूमिका",
+    "joinedOn": "सामील झाल्याची तारीख",
+    "flagReasonLabel": "कारण",
+    "flagReasonPlaceholder": "तुम्ही हे खाते का फ्लॅग करत आहात?",
+    "confirmFlag": "फ्लॅगची पुष्टी करा",
+    "resetToPending": "प्रलंबित वर परत आणा"
+  },
+  "complaints": {
+    "reportButton": "समस्येची तक्रार करा",
+    "descriptionPlaceholder": "काय घडले ते सांगा...",
+    "submit": "तक्रार पाठवा",
+    "submitting": "पाठवत आहे...",
+    "submitted": "तक्रार नोंदवली गेली — तुम्ही तिची स्थिती 'माझ्या तक्रारी' मध्ये पाहू शकता.",
+    "category_payment_not_received": "पेमेंट मिळाले नाही",
+    "category_wrong_amount": "चुकीची रक्कम",
+    "category_misconduct": "गैरवर्तन",
+    "category_other": "इतर",
+    "noComplaintsYet": "तुम्ही अजून कोणतीही तक्रार नोंदवलेली नाही.",
+    "noComplaintsInTab": "या टॅबमध्ये कोणतीही तक्रार नाही.",
+    "resolutionLabel": "अ‍ॅडमिनची टीप",
+    "statusOpen": "उघडी",
+    "statusInReview": "समीक्षेत",
+    "statusResolved": "सोडवली",
+    "statusRejected": "नाकारली",
+    "tabAll": "सर्व",
+    "unknownParty": "अज्ञात",
+    "markInReview": "समीक्षेत ठेवा",
+    "resolutionPlaceholder": "हे कसे सोडवले, ते सांगा...",
+    "paymentActionNone": "पेमेंटमध्ये बदल करू नका",
+    "paymentActionRedo": "पेमेंट पुन्हा प्रलंबित करा",
+    "paymentActionSideFarmer": "पेमेंट मिळाले असे नोंदवा (शेतकऱ्याच्या बाजूने)",
+    "resolve": "सोडवा",
+    "reject": "नाकारा"
   }
 }

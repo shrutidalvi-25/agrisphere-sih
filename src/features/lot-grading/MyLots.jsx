@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Plus, MapPin, ChevronDown, ChevronUp, Check, X, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Plus, MapPin, ChevronDown, ChevronUp, Check, X, RefreshCw, Sparkles } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import { getMyLots } from './lotService'
 import { getOffersForLot, respondToOffer, counterOffer, MAX_NEGOTIATION_ROUNDS } from '../buyer-matching/offerService'
+import { ReportButton } from '../complaints/ReportButton'
+import { getCropAdvice } from './advisorService'
 
 const GRADE_STYLE = {
   A: 'bg-primary-100 text-primary-800',
@@ -34,6 +36,20 @@ export function MyLots() {
   const [counteringId, setCounteringId] = useState(null)
   const [counterPrice, setCounterPrice] = useState('')
   const [busyId, setBusyId] = useState(null)
+  const [adviceByLot, setAdviceByLot] = useState({})
+  const [advisingId, setAdvisingId] = useState(null)
+
+  async function handleGetAdvice(lotId) {
+    setAdvisingId(lotId)
+    try {
+      const advice = await getCropAdvice(lotId)
+      setAdviceByLot((prev) => ({ ...prev, [lotId]: { text: advice.recommendation } }))
+    } catch (err) {
+      setAdviceByLot((prev) => ({ ...prev, [lotId]: { error: err.message } }))
+    } finally {
+      setAdvisingId(null)
+    }
+  }
 
   useEffect(() => {
     getMyLots(user.id).then((data) => {
@@ -127,6 +143,26 @@ export function MyLots() {
 
               {expanded === lot.id && (
                 <div className="border-t border-gray-100 p-4 space-y-2">
+                  {adviceByLot[lot.id]?.text ? (
+                    <div className="bg-primary-50 rounded-xl p-3 mb-1">
+                      <p className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 mb-1">
+                        <Sparkles size={13} /> {t('myLots.advisorTitle')}
+                      </p>
+                      <p className="text-sm text-primary-900">{adviceByLot[lot.id].text}</p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleGetAdvice(lot.id)}
+                      disabled={advisingId === lot.id}
+                      className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 bg-primary-50 rounded-lg px-2.5 py-1.5 mb-1 disabled:opacity-60"
+                    >
+                      <Sparkles size={13} /> {advisingId === lot.id ? t('myLots.advisorLoading') : t('myLots.advisorButton')}
+                    </button>
+                  )}
+                  {adviceByLot[lot.id]?.error && (
+                    <p className="text-xs text-red-500 mb-1">{adviceByLot[lot.id].error}</p>
+                  )}
+
                   {(lot.notes_original || lot.notes) && (
                     <div className="bg-cream rounded-xl p-3 mb-1">
                       <p className="text-sm text-gray-700">{lot.notes_original || lot.notes}</p>
@@ -218,6 +254,10 @@ export function MyLots() {
                             <p className="text-xs text-gray-400 mt-2 border-t pt-1.5">
                               {t('myLots.history')}: {offer.negotiation_history.map((h) => `₹${h.price} (${h.actor})`).join(' → ')}
                             </p>
+                          )}
+
+                          {offer.status !== 'withdrawn' && offer.status !== 'rejected' && (
+                            <ReportButton recordType="offer" recordId={offer.id} againstId={offer.buyer_id} />
                           )}
                         </div>
                       )

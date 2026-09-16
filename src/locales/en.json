@@ -13,7 +13,14 @@
     "toSignup": "Don't have an account? Sign up",
     "toLogin": "Already have an account? Log in",
     "errorRequired": "Email and password are required.",
-    "errorName": "Please enter your name."
+    "errorName": "Please enter your name.",
+    "errorEmailDomain": "Please use a Gmail, Yahoo, or Rediffmail address.",
+    "errorInvalidPhone": "Please enter a valid 10-digit Indian mobile number.",
+    "errorInvalidAadhaar": "Please enter a valid 12-digit Aadhaar number.",
+    "farmerIdOptional": "Farmer ID (optional)",
+    "aadhaarId": "Aadhaar number",
+    "confirmPassword": "Confirm password",
+    "errorPasswordMismatch": "Passwords do not match."
   },
   "home": {
     "welcome": "Welcome",
@@ -34,7 +41,9 @@
     "myOffers": "My Offers",
     "poolLots": "Pool Member Lots",
     "verificationQueue": "Verification Queue",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "myComplaints": "My Complaints",
+    "adminComplaints": "Complaints"
   },
   "common": {
     "loading": "Loading...",
@@ -78,7 +87,7 @@
     "hindi": "Hindi",
     "gettingLocation": "Getting location...",
     "locationCaptured": "Location captured",
-    "addLocation": "Add my location (GPS)",
+    "locationUnavailable": "Could not capture location for this photo",
     "creating": "Creating...",
     "createLotBtn": "Create Lot",
     "lotCreated": "Lot created!",
@@ -90,6 +99,9 @@
   "myLots": {
     "new": "New",
     "noLotsYet": "No lots yet. Create your first one.",
+    "advisorTitle": "Advisor recommendation",
+    "advisorButton": "Get advisor recommendation",
+    "advisorLoading": "Getting recommendation...",
     "locationAttached": "Location attached",
     "offersFromBuyers": "Offers from buyers",
     "loadingOffers": "Loading offers...",
@@ -186,6 +198,44 @@
     "lotsSection": "Lots",
     "dealsSection": "Offers",
     "paymentsSection": "Payments",
-    "totalTransactedValue": "Total value of completed deals"
+    "totalTransactedValue": "Total value of completed deals",
+    "tabPending": "Pending",
+    "tabVerified": "Verified",
+    "tabFlagged": "Flagged",
+    "tabAll": "All",
+    "searchPlaceholder": "Search by name or phone",
+    "allRoles": "All roles",
+    "joinedOn": "Joined on",
+    "flagReasonLabel": "Reason",
+    "flagReasonPlaceholder": "Why are you flagging this account?",
+    "confirmFlag": "Confirm flag",
+    "resetToPending": "Reset to pending"
+  },
+  "complaints": {
+    "reportButton": "Report an issue",
+    "descriptionPlaceholder": "Describe what happened...",
+    "submit": "Submit complaint",
+    "submitting": "Submitting...",
+    "submitted": "Complaint submitted — you can check its status under My Complaints.",
+    "category_payment_not_received": "Payment not received",
+    "category_wrong_amount": "Wrong amount",
+    "category_misconduct": "Misconduct / bad behaviour",
+    "category_other": "Other",
+    "noComplaintsYet": "You haven't raised any complaints yet.",
+    "noComplaintsInTab": "No complaints in this tab.",
+    "resolutionLabel": "Admin's note",
+    "statusOpen": "Open",
+    "statusInReview": "In review",
+    "statusResolved": "Resolved",
+    "statusRejected": "Rejected",
+    "tabAll": "All",
+    "unknownParty": "Unknown",
+    "markInReview": "Mark as in review",
+    "resolutionPlaceholder": "Explain how this was resolved...",
+    "paymentActionNone": "Don't change the payment",
+    "paymentActionRedo": "Reset payment to pending (redo)",
+    "paymentActionSideFarmer": "Mark payment as received (side with farmer)",
+    "resolve": "Resolve",
+    "reject": "Reject"
   }
 }
