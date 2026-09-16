@@ -7,6 +7,8 @@ import { getMyLots } from './lotService'
 import { getOffersForLot, respondToOffer, counterOffer, MAX_NEGOTIATION_ROUNDS } from '../buyer-matching/offerService'
 import { ReportButton } from '../complaints/ReportButton'
 import { getCropAdvice } from './advisorService'
+import { gradeCropFromUrl } from './aiGradingService'
+import { AiGradeCard } from './AiGradeCard'
 
 const GRADE_STYLE = {
   A: 'bg-primary-100 text-primary-800',
@@ -38,6 +40,8 @@ export function MyLots() {
   const [busyId, setBusyId] = useState(null)
   const [adviceByLot, setAdviceByLot] = useState({})
   const [advisingId, setAdvisingId] = useState(null)
+  const [aiGradeByLot, setAiGradeByLot] = useState({})
+  const [aiGradingId, setAiGradingId] = useState(null)
 
   async function handleGetAdvice(lotId) {
     setAdvisingId(lotId)
@@ -48,6 +52,24 @@ export function MyLots() {
       setAdviceByLot((prev) => ({ ...prev, [lotId]: { error: err.message } }))
     } finally {
       setAdvisingId(null)
+    }
+  }
+
+  async function handleAiGrade(lot) {
+    setAiGradingId(lot.id)
+    try {
+      const res = await gradeCropFromUrl({
+        photoUrl: lot.photo_url,
+        cropName: lot.crop,
+        quantityQuintal: lot.quantity_quintal,
+        distanceKm: 15,
+        state: 'Maharashtra',
+      })
+      setAiGradeByLot((prev) => ({ ...prev, [lot.id]: { result: res } }))
+    } catch (err) {
+      setAiGradeByLot((prev) => ({ ...prev, [lot.id]: { error: err.message } }))
+    } finally {
+      setAiGradingId(null)
     }
   }
 
@@ -161,6 +183,25 @@ export function MyLots() {
                   )}
                   {adviceByLot[lot.id]?.error && (
                     <p className="text-xs text-red-500 mb-1">{adviceByLot[lot.id].error}</p>
+                  )}
+
+                  {lot.photo_url && (
+                    <>
+                      {aiGradeByLot[lot.id]?.result ? (
+                        <div className="mb-1"><AiGradeCard result={aiGradeByLot[lot.id].result} /></div>
+                      ) : (
+                        <button
+                          onClick={() => handleAiGrade(lot)}
+                          disabled={aiGradingId === lot.id}
+                          className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 bg-primary-50 rounded-lg px-2.5 py-1.5 mb-1 disabled:opacity-60"
+                        >
+                          <Sparkles size={13} /> {aiGradingId === lot.id ? t('aiGrading.loading') : t('aiGrading.button')}
+                        </button>
+                      )}
+                      {aiGradeByLot[lot.id]?.error && (
+                        <p className="text-xs text-red-500 mb-1">{aiGradeByLot[lot.id].error}</p>
+                      )}
+                    </>
                   )}
 
                   {(lot.notes_original || lot.notes) && (

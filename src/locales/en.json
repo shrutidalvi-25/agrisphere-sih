@@ -1,5 +1,17 @@
 {
   "app": { "name": "AgriSphere" },
+  "aiGrading": {
+    "title": "AI Quality Check",
+    "button": "Check quality with AI",
+    "loading": "Analyzing photo...",
+    "error": "AI grading is unavailable right now.",
+    "confidenceLabel": "Confidence",
+    "netPayoutLabel": "Est. payout/kg",
+    "sellNow": "Sell now",
+    "holdHarvest": "Hold harvest",
+    "immediateLiquidation": "Sell immediately",
+    "poolingSuggested": "FPO pooling suggested"
+  },
   "nav": { "logout": "Log out", "language": "Language" },
   "auth": {
     "loginTitle": "Log in to your account",

@@ -1,10 +1,12 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Camera, Mic, MicOff, MapPin, MapPinOff, Check } from 'lucide-react'
+import { ArrowLeft, Camera, Mic, MicOff, MapPin, MapPinOff, Check, Sparkles } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import { CROPS } from '../price-intel/sampleData'
 import { createLot } from './lotService'
+import { gradeCropPhoto } from './aiGradingService'
+import { AiGradeCard } from './AiGradeCard'
 import { speechLocaleFor, nativeNameFor } from '../../locales/languageMeta'
 import { GlowEffect } from '../../components/core/glow-effect'
 import { TextMorph } from '../../components/core/text-morph'
@@ -30,6 +32,9 @@ export function CreateLot() {
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState('')
+  const [aiResult, setAiResult] = useState(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState('')
   const recognitionRef = useRef(null)
 
   // Geotagging is automatic and tied to the photo itself, not a separate
@@ -43,7 +48,32 @@ export function CreateLot() {
     if (!file) return
     setPhotoFile(file)
     setPhotoPreview(URL.createObjectURL(file))
+    setAiResult(null)
+    setAiError('')
     captureLocation()
+  }
+
+  // Optional, informational only — analyzing the photo doesn't change what
+  // gets submitted; it's a separate photo-based AI opinion shown alongside
+  // the existing rule-based grade the lot gets on submit (gradingService.js).
+  async function handleAiGrade() {
+    if (!photoFile) return
+    setAiLoading(true)
+    setAiError('')
+    try {
+      const res = await gradeCropPhoto({
+        photoFile,
+        cropName: crop,
+        quantityQuintal: Number(quantity) || 1,
+        distanceKm: 15,
+        state: 'Maharashtra',
+      })
+      setAiResult(res)
+    } catch (err) {
+      setAiError(err.message || t('aiGrading.error'))
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   function captureLocation() {
@@ -201,6 +231,19 @@ export function CreateLot() {
               )}
             </p>
           )}
+
+          {photoFile && !aiResult && (
+            <button
+              type="button"
+              onClick={handleAiGrade}
+              disabled={aiLoading}
+              className="flex items-center gap-1.5 text-xs font-semibold text-primary-700 bg-primary-50 rounded-lg px-2.5 py-1.5 mt-2 disabled:opacity-60"
+            >
+              <Sparkles size={13} /> {aiLoading ? t('aiGrading.loading') : t('aiGrading.button')}
+            </button>
+          )}
+          {aiError && <p className="text-xs text-red-500 mt-1.5">{aiError}</p>}
+          {aiResult && <div className="mt-2"><AiGradeCard result={aiResult} /></div>}
         </div>
 
         <div>
