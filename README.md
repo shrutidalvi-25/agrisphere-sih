@@ -1,63 +1,83 @@
 # AgriSphere
 
-SIH 2026 — PS26132. A single platform that turns scattered mandi prices into
-one clear answer, and lets farmers and buyers check each other's track
-record before agreeing to a deal.
+> **Smart India Hackathon 2026** — PS26132  
+> **Team Name:** AgriSphere | **Team ID:** MMSIH056  
+> **Core Mission:** *"A single platform that turns scattered mandi prices into one clear answer, and lets farmers and buyers check each other's track record before agreeing to a deal."*
 
-## Getting started
+---
 
+## ⚡ Quick Start
+
+### 1. Frontend (React + Vite + Tailwind)
 ```bash
 npm install
 cp .env.example .env      # then fill in your Supabase URL + anon key
 npm run dev
 ```
-
 Opens at `http://localhost:5173`.
 
-## One-time Supabase setup (whoever owns Module 1 does this first)
+### 2. AI Grading & Mandi Price Agent (Python FastAPI + LangGraph)
+```bash
+pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+Interactive API docs open at `http://localhost:8000/docs`.
 
-1. Create a project at supabase.com (free tier).
-2. Go to SQL Editor → paste and run `supabase/01_profiles.sql`.
-3. Go to Authentication → Providers → make sure **Email** is enabled.
-4. Copy your Project URL and anon public key (Settings → API) into `.env`.
-5. Invite the rest of the team to the Supabase project (Project Settings → Team).
+---
 
-## Folder structure
+## 🏗️ Repository & Architecture Structure
 
 ```
-src/
-  lib/            shared setup — supabaseClient.js, i18n.js
-  locales/        en.json, hi.json, mr.json (multilingual text)
-  features/
-    auth/         Module 1 + 2 — DONE (login, signup, roles, language switcher)
-    price-intel/  Module 3 + 4 — price dashboard, sell/hold advisor
-    lot-grading/  Module 5 — lot creation, AI grading, voice input
-    buyer-matching/  Module 6 — buyer discovery, offers, price lock
-    fpo/          Module 7 — FPO pooling, payment split-back
-    reliability/  Module 8 + 9 — payment tracking, reliability score
-supabase/         one .sql file per module — run each in the SQL Editor as that module is built
+├── src/                            # Frontend (React + Vite + Tailwind)
+│   ├── lib/                        # Shared setup — supabaseClient.js, i18n.js
+│   ├── locales/                    # Multilingual text (en.json, hi.json, mr.json)
+│   └── features/
+│       ├── auth/                   # Module 1 & 2 (login, signup, roles, language switcher)
+│       ├── price-intel/            # Module 3 & 4 (price dashboard, sell/hold advisor)
+│       ├── lot-grading/            # Module 5 (lot creation, AI grading, voice input)
+│       ├── buyer-matching/         # Module 6 (buyer discovery, offers, price lock)
+│       ├── fpo/                    # Module 7 (FPO pooling, payment split-back)
+│       └── reliability/            # Module 8 & 9 (payment tracking, reliability score)
+├── supabase/                       # Database migrations and table schemas
+│   ├── 01_profiles.sql
+│   └── ...
+├── app/                            # Module 5: AI Quality Analysis & Grading Microservice
+│   ├── main.py                     # FastAPI entry point, CORS, OpenAPI docs
+│   ├── core/                       # Settings (Pydantic), config, structured logging
+│   ├── schemas/                    # Pydantic schemas (Grade A/B/C, Confidence, Net Realisation)
+│   ├── services/                   # Image optimization & data.gov.in Agmarknet client
+│   ├── tools/                      # LangGraph @tool (fetch_agmarknet_prices)
+│   ├── agents/                     # LangGraph StateGraph, Qwen Multimodal Vision on Groq
+│   └── api/v1/                     # REST API endpoints (/grade/upload, /grade/base64, /prices, /health)
+├── tests/                          # Automated tests & sample crop images
+├── requirements.txt                # Python dependencies
+├── package.json                    # Node dependencies
+└── .env.example                    # Environment configuration template
 ```
 
-## What's already built
+---
 
-**Module 1 — Auth & Roles** and **Module 2 — Multilingual UI** are working:
-- Sign up / log in with email + password, choose a role (Farmer / Buyer / FPO / Admin)
-- Role is stored in the `profiles` table and gates what a user can see (`ProtectedRoute`)
-- Language switcher (Marathi / Hindi / English) — Marathi is the default
-- A placeholder home screen per role, ready for each module owner to fill in
+## 🌾 Module 5: AI Crop Quality Analysis & Grading Microservice
 
-## What everyone else builds next
+### Key Capabilities
+1. **Multimodal Vision Inspection (Groq LLM)**: Powered by `qwen/qwen3.8-27b` to analyze harvest photos for color uniformity, ripeness stage, skin texture, and surface defects.
+2. **Real-time Mandi Discovery via LangGraph `@tool`**: Autonomously queries the Government of India's **data.gov.in (Agmarknet)** dataset (`9ef84268-d588-465a-a308-a864a43d0070`) for live modal and range prices.
+3. **Confidence-Aware AI Grading**: Classifies produce into **Grade A**, **Grade B**, or **Grade C** with an explicit confidence score (e.g. 96.5%).
+4. **Net Realisation Breakdown**: Payout computation factoring in local mandi transport costs and APMC cess to give the farmer their true in-hand price.
+5. **Sell Now vs. Hold Harvest**: Decision support to prevent distress selling.
 
-Each person creates their feature inside their assigned `src/features/<name>/` folder,
-and adds their own `supabase/0X_<name>.sql` file for any new tables they need.
-Reuse `useAuth()` (from `features/auth/AuthContext`) to get the logged-in user's
-role and ID — don't build a second auth system.
+---
 
-See the full module-by-module build guide (tools, steps, definition of done)
-that was shared separately for exact instructions per module.
+### API Endpoints
+- **`POST /api/v1/grade/upload`**: Multipart file upload (image + crop metadata).
+- **`POST /api/v1/grade/base64`**: Base64 JSON payload (for mobile/camera integration).
+- **`GET /api/v1/prices`**: Direct Agmarknet mandi price lookup for any commodity.
+- **`GET /api/v1/health`**: Service and API key readiness check.
 
-## Tech stack
+---
 
-React + Vite + Tailwind (frontend) · Supabase (auth, Postgres, storage) ·
-Python FastAPI (ML service, added when Module 5's grading model is ready) ·
-i18next (Marathi/Hindi/English)
+## 🎯 Alignment with SIH 2026 AgriSphere Specifications
+- **Zone 2 Frontend**: PWA React components with offline tolerance and Marathi/Hindi localization.
+- **Zone 3 Backend**: Modular service pattern with API gateway, structured errors, and Supabase auth integration.
+- **Zone 4 Intelligence**: LangGraph state machine, Groq vision inference, and official `data.gov.in` tool calling.
+- **Social Impact**: Directly targets raising farmer realization from ~33% towards the target **~85%** benchmark.
