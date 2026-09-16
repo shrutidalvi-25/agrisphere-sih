@@ -7,6 +7,7 @@ import { CROPS } from '../price-intel/sampleData'
 import { getListedLots } from '../lot-grading/lotService'
 import { ReliabilityBadge } from '../reliability/ReliabilityBadge'
 import { createOffer } from './offerService'
+import { nativeNameFor } from '../../locales/languageMeta'
 
 const GRADE_STYLE = {
   A: 'bg-primary-100 text-primary-800',
@@ -135,7 +136,7 @@ export function BrowseLots() {
                     {lot.notes}
                     {lot.notes_language && (
                       <span className="text-xs text-gray-400">
-                        {' '}· {t('browseLots.translatedFrom', { lang: lot.notes_language === 'mr' ? t('createLot.marathi') : t('createLot.hindi') })}
+                        {' '}· {t('browseLots.translatedFrom', { lang: nativeNameFor(lot.notes_language) })}
                       </span>
                     )}
                   </p>

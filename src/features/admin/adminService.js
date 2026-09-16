@@ -1,20 +1,50 @@
 import { supabase } from '../../lib/supabaseClient'
 
-export async function getPendingProfiles() {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('status', 'active')
-    .neq('role', 'admin')
-    .order('created_at', { ascending: true })
+// `status` undefined/null means "all non-admin accounts" — used by the
+// reviewed-accounts tab so an admin can find and undo a past decision.
+export async function getProfiles(status) {
+  let query = supabase.from('profiles').select('*').neq('role', 'admin').order('created_at', { ascending: true })
+  if (status) query = query.eq('status', status)
+  const { data, error } = await query
   if (error) throw error
   return data
 }
 
-export async function setProfileStatus(userId, status) {
-  const { data, error } = await supabase.from('profiles').update({ status }).eq('id', userId).select().single()
+export async function getPendingProfiles() {
+  return getProfiles('active')
+}
+
+// `reason` is only meaningful for status 'flagged' — stored so the decision
+// is auditable later. Moving a profile back to 'active' (undo/re-review)
+// clears any old reason so it doesn't linger from a previous flag.
+export async function setProfileStatus(userId, status, reason = null) {
+  const updates = { status, flag_reason: status === 'flagged' ? reason : null }
+  const { data, error } = await supabase.from('profiles').update(updates).eq('id', userId).select().single()
   if (error) throw error
   return data
+}
+
+// A quick, honest activity signal for the expanded profile view — real
+// counts from that person's own rows, not a computed "trust score". Lets
+// an admin notice, for example, an unverified farmer who already has lots
+// listed, which is worth a second look before approving.
+export async function getProfileActivity(profileId, role) {
+  if (role === 'farmer') {
+    const { count, error } = await supabase.from('lots').select('id', { count: 'exact', head: true }).eq('farmer_id', profileId)
+    if (error) throw error
+    return { label: 'lots created', count: count ?? 0 }
+  }
+  if (role === 'buyer') {
+    const { count, error } = await supabase.from('offers').select('id', { count: 'exact', head: true }).eq('buyer_id', profileId)
+    if (error) throw error
+    return { label: 'offers made', count: count ?? 0 }
+  }
+  if (role === 'fpo') {
+    const { count, error } = await supabase.from('pooled_lots').select('id', { count: 'exact', head: true }).eq('fpo_id', profileId)
+    if (error) throw error
+    return { label: 'pools created', count: count ?? 0 }
+  }
+  return null
 }
 
 // Platform-wide counts for the admin dashboard — every number here is a

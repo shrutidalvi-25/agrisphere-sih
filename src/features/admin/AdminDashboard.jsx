@@ -23,7 +23,11 @@ export function AdminDashboard() {
         <h1 className="text-lg font-bold text-primary-800">{t('admin.dashboard')}</h1>
       </header>
 
-      <main className="p-5 max-w-lg mx-auto">
+      {/* max-w-lg keeps the phone layout exactly as before; lg:max-w-6xl only
+          kicks in on wide screens, where the sections below also switch from
+          one-per-row to a multi-column grid instead of stretching a single
+          narrow column across the whole window. */}
+      <main className="p-5 max-w-lg lg:max-w-6xl mx-auto">
         {loading ? (
           <p className="text-center text-gray-400 py-10">{t('common.loading')}</p>
         ) : (
@@ -44,44 +48,59 @@ export function AdminDashboard() {
               </Link>
             )}
 
-            <p className="text-sm font-semibold text-gray-500 mb-2">{t('admin.usersSection')}</p>
-            <div className="grid grid-cols-3 gap-3 mb-5">
-              <StatCard icon={Sprout} value={stats.farmers} label={t('roles.farmer')} />
-              <StatCard icon={ShoppingCart} value={stats.buyers} label={t('roles.buyer')} />
-              <StatCard icon={Users} value={stats.fpos} label={t('roles.fpo')} />
-            </div>
+            <div className="lg:grid lg:grid-cols-2 xl:grid-cols-4 lg:gap-6 lg:items-start">
+              <Section title={t('admin.usersSection')}>
+                <div className="grid grid-cols-3 gap-3">
+                  <StatCard icon={Sprout} value={stats.farmers} label={t('roles.farmer')} />
+                  <StatCard icon={ShoppingCart} value={stats.buyers} label={t('roles.buyer')} />
+                  <StatCard icon={Users} value={stats.fpos} label={t('roles.fpo')} />
+                </div>
+              </Section>
 
-            <p className="text-sm font-semibold text-gray-500 mb-2">{t('admin.lotsSection')}</p>
-            <div className="grid grid-cols-3 gap-3 mb-5">
-              <StatCard icon={Package} value={stats.lotsListed} label={t('myLots.statusListed')} />
-              <StatCard icon={Package} value={stats.lotsSold} label={t('myLots.statusSold')} gold />
-              <StatCard icon={Package} value={stats.lotsPooled} label={t('poolLots.lotsPooled')} />
-            </div>
+              <Section title={t('admin.lotsSection')}>
+                <div className="grid grid-cols-3 gap-3">
+                  <StatCard icon={Package} value={stats.lotsListed} label={t('myLots.statusListed')} />
+                  <StatCard icon={Package} value={stats.lotsSold} label={t('myLots.statusSold')} gold />
+                  <StatCard icon={Package} value={stats.lotsPooled} label={t('poolLots.lotsPooled')} />
+                </div>
+              </Section>
 
-            <p className="text-sm font-semibold text-gray-500 mb-2">{t('admin.dealsSection')}</p>
-            <div className="grid grid-cols-2 gap-3 mb-5">
-              <StatCard icon={Handshake} value={stats.offersAccepted} label={t('myOffers.statusAccepted')} />
-              <StatCard icon={Handshake} value={stats.offersPending} label={t('myOffers.statusPending')} />
-            </div>
+              <Section title={t('admin.dealsSection')}>
+                <div className="grid grid-cols-2 gap-3">
+                  <StatCard icon={Handshake} value={stats.offersAccepted} label={t('myOffers.statusAccepted')} />
+                  <StatCard icon={Handshake} value={stats.offersPending} label={t('myOffers.statusPending')} />
+                </div>
+              </Section>
 
-            <p className="text-sm font-semibold text-gray-500 mb-2">{t('admin.paymentsSection')}</p>
-            <div className="bg-white rounded-2xl p-5 shadow-sm flex items-center gap-3 mb-3">
-              <div className="bg-primary-100 text-primary-700 rounded-full p-2.5">
-                <Wallet size={20} />
-              </div>
-              <div>
-                <p className="text-xl font-bold text-primary-800">₹{stats.totalTransactedValue.toLocaleString('en-IN')}</p>
-                <p className="text-xs text-gray-500">{t('admin.totalTransactedValue')}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              <StatCard value={stats.paymentsPending} label={t('payments.statusPending')} />
-              <StatCard value={stats.paymentsPaid} label={t('payments.statusPaid')} />
-              <StatCard value={stats.paymentsReceived} label={t('payments.statusReceived')} gold />
+              <Section title={t('admin.paymentsSection')}>
+                <div className="bg-white rounded-2xl p-5 shadow-sm flex items-center gap-3 mb-3">
+                  <div className="bg-primary-100 text-primary-700 rounded-full p-2.5">
+                    <Wallet size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold text-primary-800">₹{stats.totalTransactedValue.toLocaleString('en-IN')}</p>
+                    <p className="text-xs text-gray-500">{t('admin.totalTransactedValue')}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <StatCard value={stats.paymentsPending} label={t('payments.statusPending')} />
+                  <StatCard value={stats.paymentsPaid} label={t('payments.statusPaid')} />
+                  <StatCard value={stats.paymentsReceived} label={t('payments.statusReceived')} gold />
+                </div>
+              </Section>
             </div>
           </>
         )}
       </main>
+    </div>
+  )
+}
+
+function Section({ title, children }) {
+  return (
+    <div className="mb-5 lg:mb-0">
+      <p className="text-sm font-semibold text-gray-500 mb-2">{title}</p>
+      {children}
     </div>
   )
 }

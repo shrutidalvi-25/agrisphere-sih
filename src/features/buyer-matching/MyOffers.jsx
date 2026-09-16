@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, RefreshCw, X } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
 import { getMyOffers, counterOffer, respondToOffer, MAX_NEGOTIATION_ROUNDS } from './offerService'
+import { ReportButton } from '../complaints/ReportButton'
 
 export function MyOffers() {
   const { t } = useTranslation()
@@ -157,6 +158,10 @@ export function MyOffers() {
                   <p className="text-xs text-gray-400 mt-2 border-t pt-1.5">
                     {t('myOffers.history')}: {offer.negotiation_history.map((h) => `₹${h.price} (${h.actor})`).join(' → ')}
                   </p>
+                )}
+
+                {offer.status !== 'withdrawn' && (
+                  <ReportButton recordType="offer" recordId={offer.id} againstId={offer.lots?.farmer_id} />
                 )}
               </div>
             )
