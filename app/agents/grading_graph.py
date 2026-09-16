@@ -149,40 +149,42 @@ def visual_inspection_node(state: GradingAgentState) -> Dict[str, Any]:
     crop_hint = state.get("crop_name") or ""
     visual_result = None
 
-    # Primary: Groq Multimodal Vision LLM (qwen/qwen3.8-27b)
-    if settings.GROQ_API_KEY and settings.GROQ_API_KEY != "gsk_your_groq_api_key_here":
+    # Primary: Google Gemini Vision. Groq deprecated its vision-capable models
+    # platform-wide in June 2026 with no free/developer-tier replacement, so
+    # image inspection runs on Gemini instead; Groq is still used for the
+    # text-only synthesis step below.
+    if settings.GEMINI_API_KEY and settings.GEMINI_API_KEY != "your_gemini_api_key_here":
         try:
-            from groq import Groq
-            groq_client = Groq(api_key=settings.GROQ_API_KEY)
+            import base64
+            from google import genai
+            from google.genai import types
+
+            raw_b64 = image_data_uri.split(",", 1)[1] if "," in image_data_uri else image_data_uri
+            img_bytes = base64.b64decode(raw_b64)
+
             user_prompt = "Perform an expert agricultural quality inspection on this crop harvest image."
             if crop_hint:
                 user_prompt += f" The farmer indicates this commodity is '{crop_hint}'."
 
-            logger.info(f"Sending image to Groq Multimodal Vision LLM: {settings.GROQ_VISION_MODEL}")
-            resp = groq_client.chat.completions.create(
-                model=settings.GROQ_VISION_MODEL,
-                messages=[
-                    {"role": "system", "content": VISION_INSPECTION_SYSTEM_PROMPT},
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": user_prompt},
-                            {"type": "image_url", "image_url": {"url": image_data_uri}}
-                        ]
-                    }
+            logger.info(f"Sending image to Gemini Vision: {settings.GEMINI_VISION_MODEL}")
+            gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+            resp = gemini_client.models.generate_content(
+                model=settings.GEMINI_VISION_MODEL,
+                contents=[
+                    types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"),
+                    f"{VISION_INSPECTION_SYSTEM_PROMPT}\n\n{user_prompt}",
                 ],
-                temperature=0.1,
-                max_tokens=1024
+                config=types.GenerateContentConfig(temperature=0.1, max_output_tokens=1024),
             )
-            cleaned = clean_json_text(resp.choices[0].message.content)
+            cleaned = clean_json_text(resp.text)
             visual_result = json.loads(cleaned)
             logger.info(
-                f"Multimodal Vision LLM ({settings.GROQ_VISION_MODEL}) evaluated: "
+                f"Gemini Vision ({settings.GEMINI_VISION_MODEL}) evaluated: "
                 f"crop={visual_result.get('crop_name')}, grade={visual_result.get('preliminary_grade')}, "
                 f"defects={visual_result.get('estimated_defect_area_pct')}%"
             )
         except Exception as e:
-            logger.warning(f"Groq Vision LLM encountered error: {e}. Switching to edge CV feature analyzer.")
+            logger.warning(f"Gemini Vision encountered error: {e}. Switching to edge CV feature analyzer.")
 
     # Fallback to edge CV feature analyzer if Vision LLM not available or error occurs
     if not visual_result:

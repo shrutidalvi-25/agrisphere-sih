@@ -32,10 +32,16 @@ class Settings(BaseSettings):
             return v
         return ["*"]
 
-    # Groq API Configuration (Multimodal Vision & Reasoning)
+    # Groq API Configuration (Text Reasoning / Synthesis)
     GROQ_API_KEY: str = ""
     GROQ_VISION_MODEL: str = "qwen/qwen3.8-27b"
     GROQ_TEXT_MODEL: str = "qwen/qwen3.8-27b"
+
+    # Gemini API Configuration (Multimodal Vision — Groq's vision models were
+    # deprecated platform-wide in June 2026 with no vision replacement on the
+    # free/developer tier, so image inspection uses Gemini instead)
+    GEMINI_API_KEY: str = ""
+    GEMINI_VISION_MODEL: str = "gemini-3.6-flash"
     
     # data.gov.in Agmarknet API Configuration
     AGMARKNET_API_KEY: str = ""
