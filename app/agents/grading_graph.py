@@ -191,6 +191,19 @@ def visual_inspection_node(state: GradingAgentState) -> Dict[str, Any]:
         logger.info("Running edge computer vision feature analyzer.")
         visual_result = analyze_image_features(image_data_uri, crop_hint)
 
+    # The edge CV fallback is a pixel-color heuristic — it has no way to tell
+    # a bottle from a tomato, so it can't participate in this check and is
+    # assumed valid. Only a real vision model's explicit "false" here should
+    # ever short-circuit the pipeline.
+    if visual_result.get("is_crop_produce") is False:
+        detected = visual_result.get("crop_name") or "an unrecognized object"
+        error_msg = (
+            f"This photo doesn't appear to show crop produce (looks like {detected}). "
+            "Please upload a clear photo of the actual harvest."
+        )
+        logger.warning(f"Rejected non-crop image: {error_msg}")
+        return {"detected_crop": detected, "visual_assessment": visual_result, "error": error_msg}
+
     detected_crop = visual_result.get("crop_name") or crop_hint or "Produce"
     return {
         "detected_crop": detected_crop,
@@ -339,6 +352,11 @@ Synthesize the final confidence-aware grade (A, B, or C), compute net farmer pay
 # -------------------------------------------------------------------------
 # Compile the LangGraph Workflow
 # -------------------------------------------------------------------------
+def route_after_visual_inspection(state: GradingAgentState) -> str:
+    """Skip market lookup and synthesis entirely for a rejected non-crop image."""
+    return END if state.get("error") else "fetch_market"
+
+
 def create_grading_graph():
     builder = StateGraph(GradingAgentState)
     builder.add_node("visual_inspection", visual_inspection_node)
@@ -347,7 +365,7 @@ def create_grading_graph():
 
     # Edge flow
     builder.add_edge(START, "visual_inspection")
-    builder.add_edge("visual_inspection", "fetch_market")
+    builder.add_conditional_edges("visual_inspection", route_after_visual_inspection, ["fetch_market", END])
     builder.add_edge("fetch_market", "synthesis")
     builder.add_edge("synthesis", END)
 

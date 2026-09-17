@@ -36,6 +36,8 @@ async def run_grading_pipeline(
 
     try:
         result_state = grading_agent_graph.invoke(initial_state)
+        if result_state.get("error"):
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result_state["error"])
         final_result = result_state.get("final_grade_result")
         if not final_result:
             raise HTTPException(
