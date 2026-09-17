@@ -1,14 +1,22 @@
-// Voice IVR buyer connect — a farmer calls a phone number, presses digits
-// to pick a language then a crop, hears the buyers interested in that
-// crop, and presses a digit to be bridged live to that buyer's phone.
+// AI-voice buyer-connect IVR — a farmer calls a phone number, presses
+// digits to pick a language then a crop, hears the buyers interested in
+// that crop, and presses a digit to be bridged live to that buyer's
+// phone. Every prompt is spoken by Google's neural (WaveNet) voices in
+// the farmer's chosen language (Marathi/Hindi/English) rather than
+// Twilio's default robotic TTS — that's the "AI voice" in this feature.
 //
-// This is DTMF (keypad) menu logic with multilingual TTS prompts — plain
-// rule-based IVR, not conversational AI. No speech recognition, no LLM in
-// the call itself. Point your telephony provider's inbound-call webhook
-// (Twilio "A Call Comes In", or the Exotel/Knowlarity equivalent) at this
-// function's URL. Real deployment in India additionally needs DLT
-// registration (TRAI) before a provider will carry the calls — this
-// function itself works today against a trial/test number.
+// The farmer only ever presses keys — there's no speech recognition or
+// LLM understanding spoken input here, on purpose (phone-line speech
+// recognition in Marathi/Hindi is meaningfully less reliable than a
+// keypad, especially over a noisy rural connection). Be precise about
+// that distinction with evaluators: this is natural-sounding AI-generated
+// speech output, not a conversational AI agent.
+//
+// Point your telephony provider's inbound-call webhook (Twilio "A Call
+// Comes In", or the Exotel/Knowlarity equivalent) at this function's URL.
+// Real deployment in India additionally needs DLT registration (TRAI)
+// before a provider will carry the calls — this function itself works
+// today against a trial/test number.
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 // Same order as src/features/price-intel/sampleData.js CROPS — keep these
@@ -19,7 +27,16 @@ const CROPS = [
   'Groundnut', 'Grapes', 'Banana', 'Turmeric', 'Chilli',
 ]
 
+// Google's neural (WaveNet) voices, not Twilio's default robotic TTS —
+// this is what makes the call sound like an "AI voice" rather than a
+// standard phone-tree, while the farmer still only ever presses keys (no
+// speech recognition anywhere in this flow).
 const TTS_LOCALE: Record<string, string> = { mr: 'mr-IN', hi: 'hi-IN', en: 'en-IN' }
+const TTS_VOICE: Record<string, string> = {
+  mr: 'Google.mr-IN-Wavenet-A',
+  hi: 'Google.hi-IN-Wavenet-A',
+  en: 'Google.en-IN-Wavenet-D',
+}
 
 const PROMPTS = {
   cropMenu: {
@@ -45,17 +62,17 @@ function xml(body: string) {
   })
 }
 
-function gather(prompts: { lang: string; text: string }[], numDigits = 2) {
-  const says = prompts.map((p) => `<Say language="${p.lang}">${p.text}</Say>`).join('')
+function gather(prompts: { lang: string; voice: string; text: string }[], numDigits = 2) {
+  const says = prompts.map((p) => `<Say language="${p.lang}" voice="${p.voice}">${p.text}</Say>`).join('')
   return xml(`<Gather numDigits="${numDigits}" action="/ivr-webhook" method="POST" timeout="8">${says}</Gather>`)
 }
 
 function languageMenuTwiml() {
   return gather(
     [
-      { lang: 'mr-IN', text: 'मराठीसाठी १ दाबा.' },
-      { lang: 'hi-IN', text: 'हिंदी के लिए 2 दबाएं.' },
-      { lang: 'en-IN', text: 'Press 3 for English.' },
+      { lang: 'mr-IN', voice: TTS_VOICE.mr, text: 'मराठीसाठी १ दाबा.' },
+      { lang: 'hi-IN', voice: TTS_VOICE.hi, text: 'हिंदी के लिए 2 दबाएं.' },
+      { lang: 'en-IN', voice: TTS_VOICE.en, text: 'Press 3 for English.' },
     ],
     1
   )
@@ -63,13 +80,14 @@ function languageMenuTwiml() {
 
 function cropMenuTwiml(language: string) {
   const loc = TTS_LOCALE[language]
-  return gather([{ lang: loc, text: PROMPTS.cropMenu[language as keyof typeof PROMPTS.cropMenu] }], 2)
+  return gather([{ lang: loc, voice: TTS_VOICE[language], text: PROMPTS.cropMenu[language as keyof typeof PROMPTS.cropMenu] }], 2)
 }
 
 function buyerListTwiml(buyers: { name: string }[], language: string) {
   const loc = TTS_LOCALE[language]
+  const voice = TTS_VOICE[language]
   if (buyers.length === 0) {
-    return xml(`<Say language="${loc}">${PROMPTS.noBuyers[language as keyof typeof PROMPTS.noBuyers]}</Say><Hangup/>`)
+    return xml(`<Say language="${loc}" voice="${voice}">${PROMPTS.noBuyers[language as keyof typeof PROMPTS.noBuyers]}</Say><Hangup/>`)
   }
   const lines: Record<string, (b: { name: string }, i: number) => string> = {
     mr: (b, i) => `${b.name} साठी ${i + 1}`,
@@ -77,12 +95,13 @@ function buyerListTwiml(buyers: { name: string }[], language: string) {
     en: (b, i) => `Press ${i + 1} for ${b.name}`,
   }
   const text = buyers.map((b, i) => lines[language](b, i)).join(', ')
-  return gather([{ lang: loc, text }], 1)
+  return gather([{ lang: loc, voice, text }], 1)
 }
 
 function dialTwiml(buyerPhone: string, language: string) {
   const loc = TTS_LOCALE[language]
-  return xml(`<Say language="${loc}">${PROMPTS.connecting[language as keyof typeof PROMPTS.connecting]}</Say><Dial>${buyerPhone}</Dial>`)
+  const voice = TTS_VOICE[language]
+  return xml(`<Say language="${loc}" voice="${voice}">${PROMPTS.connecting[language as keyof typeof PROMPTS.connecting]}</Say><Dial>${buyerPhone}</Dial>`)
 }
 
 Deno.serve(async (req) => {

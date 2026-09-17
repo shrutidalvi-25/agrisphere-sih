@@ -3,6 +3,10 @@
 .env.local
 .env.*.local
 
+# Local Supabase CLI link metadata (machine-specific, not secrets, just noise)
+supabase/.temp/*
+!supabase/.temp/cli-latest
+
 # Python cache & artifacts
 __pycache__/
 *.py[cod]

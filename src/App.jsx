@@ -15,6 +15,7 @@ import { VerificationQueue } from './features/admin/VerificationQueue'
 import { AdminDashboard } from './features/admin/AdminDashboard'
 import { MyComplaints } from './features/complaints/MyComplaints'
 import { AdminComplaints } from './features/complaints/AdminComplaints'
+import { VoiceCallSell } from './features/voice-ivr/VoiceCallSell'
 
 // "/" serves the public marketing page to a signed-out visitor, and the
 // farmer-friendly dashboard to a signed-in user — same route either way, so
@@ -108,6 +109,14 @@ export default function App() {
             element={
               <ProtectedRoute allow={['admin']}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/voice-call"
+            element={
+              <ProtectedRoute allow={['farmer']}>
+                <VoiceCallSell />
               </ProtectedRoute>
             }
           />

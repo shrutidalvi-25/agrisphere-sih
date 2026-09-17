@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Menu, IndianRupee, Camera, Sprout, Wallet, Flag, TrendingUp, TrendingDown, Truck, ArrowRight } from 'lucide-react'
+import { Menu, IndianRupee, Camera, Sprout, Wallet, Flag, TrendingUp, TrendingDown, Truck, ArrowRight, PhoneCall } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts'
 import { useAuth } from './AuthContext'
 import { LanguageSwitcher } from './LanguageSwitcher'
@@ -249,6 +249,7 @@ export function FarmerDashboard() {
                 { icon: Sprout, label: t('menu.myLots'), to: '/lots/mine' },
                 { icon: Wallet, label: t('menu.payments'), to: '/payments' },
                 { icon: Flag, label: t('menu.myComplaints'), to: '/complaints' },
+                { icon: PhoneCall, label: 'Call to Sell', to: '/voice-call' },
               ].map(({ icon: Icon, label, to, gold }) => (
                 <Link
                   key={label}
