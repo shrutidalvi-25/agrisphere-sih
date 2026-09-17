@@ -134,6 +134,7 @@
     "all": "All",
     "noLotsListed": "No lots listed right now.",
     "locationShared": "Location shared",
+    "transportEstimate": "transport",
     "translatedFrom": "translated from {{lang}}",
     "offerSent": "Offer sent ✓",
     "pricePerQuintalPlaceholder": "₹/quintal",

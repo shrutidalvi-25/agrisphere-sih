@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, MapPin, Send } from 'lucide-react'
+import { ArrowLeft, MapPin, Send, Truck } from 'lucide-react'
 import { useAuth } from '../auth/AuthContext'
-import { CROPS } from '../price-intel/sampleData'
+import { supabase } from '../../lib/supabaseClient'
+import { CROPS, TRANSPORT_COST_PER_KM } from '../price-intel/sampleData'
+import { haversineKm } from '../../lib/distance'
 import { getListedLots } from '../lot-grading/lotService'
 import { ReliabilityBadge } from '../reliability/ReliabilityBadge'
 import { createOffer } from './offerService'
@@ -17,7 +19,7 @@ const GRADE_STYLE = {
 
 export function BrowseLots() {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [crop, setCrop] = useState('')
   const [lots, setLots] = useState([])
   const [loading, setLoading] = useState(true)
@@ -26,6 +28,7 @@ export function BrowseLots() {
   const [qty, setQty] = useState('')
   const [sending, setSending] = useState(false)
   const [sentFor, setSentFor] = useState(null)
+  const [buyerLocation, setBuyerLocation] = useState(null)
 
   useEffect(() => {
     setLoading(true)
@@ -34,6 +37,28 @@ export function BrowseLots() {
       setLoading(false)
     })
   }, [crop])
+
+  // One-time capture, same pattern as the farmer's photo geotagging in
+  // CreateLot.jsx — free browser Geolocation API, no external service.
+  // Saved to the buyer's own profile so it's only asked for once, not on
+  // every visit to this page.
+  useEffect(() => {
+    if (!user?.id) return
+    if (profile?.lat && profile?.lng) {
+      setBuyerLocation({ lat: profile.lat, lng: profile.lng })
+      return
+    }
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        setBuyerLocation(loc)
+        supabase.from('profiles').update(loc).eq('id', user.id)
+      },
+      () => {}, // denied/unavailable — distance just won't show, no error UI needed
+      { timeout: 8000 }
+    )
+  }, [user?.id, profile?.lat, profile?.lng])
 
   function openOffer(lot) {
     setOfferLot(lot)
@@ -122,6 +147,15 @@ export function BrowseLots() {
                         <MapPin size={11} /> {t('browseLots.locationShared')}
                       </p>
                     )}
+                    {lot.lat && lot.lng && buyerLocation && (() => {
+                      const distanceKm = haversineKm(buyerLocation.lat, buyerLocation.lng, lot.lat, lot.lng)
+                      const transportCost = Math.round(distanceKm * TRANSPORT_COST_PER_KM)
+                      return (
+                        <p className="flex items-center gap-1 text-xs text-gray-400 mt-1">
+                          <Truck size={11} /> {distanceKm} km · ~₹{transportCost}/{t('common.quintal')} {t('browseLots.transportEstimate')}
+                        </p>
+                      )
+                    })()}
                     <div className="mt-1.5">
                       <ReliabilityBadge farmerId={lot.farmer_id} />
                     </div>
