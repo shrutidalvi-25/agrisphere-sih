@@ -5,6 +5,7 @@ import { ArrowLeft, IndianRupee, Check, ShieldCheck, Link2, Lock } from 'lucide-
 import { useAuth } from '../auth/AuthContext'
 import { getMyPayments, markPaid, confirmReceived } from './paymentService'
 import { ReportButton } from '../complaints/ReportButton'
+import { openRazorpayCheckout } from './razorpayService'
 
 const STATUS_STYLE = {
   pending: 'bg-gray-100 text-gray-600',
@@ -35,12 +36,21 @@ export function Payments() {
 
   useEffect(load, [user.id, role])
 
-  async function handleMarkPaid(payment) {
+  async function handlePayNow(payment) {
     setBusyId(payment.id)
     try {
-      await markPaid(payment)
-      load()
-    } finally {
+      await openRazorpayCheckout({
+        amount: payment.amount,
+        description: `${payment.offers.lots.crop} — ${payment.offers.quantity_quintal} ${t('common.quintal')}`,
+        onSuccess: async () => {
+          await markPaid(payment)
+          load()
+          setBusyId(null)
+        },
+        onDismiss: () => setBusyId(null),
+      })
+    } catch (err) {
+      alert(err.message || 'Could not start payment.')
       setBusyId(null)
     }
   }
@@ -113,11 +123,11 @@ export function Payments() {
 
               {role === 'buyer' && payment.status === 'pending' && (
                 <button
-                  onClick={() => handleMarkPaid(payment)}
+                  onClick={() => handlePayNow(payment)}
                   disabled={busyId === payment.id}
                   className="mt-3 w-full flex items-center justify-center gap-2 bg-gold-600 text-white rounded-xl py-2.5 text-sm font-semibold disabled:opacity-60"
                 >
-                  <Check size={16} /> {busyId === payment.id ? t('payments.marking') : t('payments.markAsPaid')}
+                  <Check size={16} /> {busyId === payment.id ? t('payments.marking') : `${t('payments.markAsPaid')} — ₹${payment.amount}`}
                 </button>
               )}
 
