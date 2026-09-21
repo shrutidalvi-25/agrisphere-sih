@@ -152,7 +152,7 @@ export function FarmerDashboard() {
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {rows.slice(0, 6).map((r, i) => (
-                <div key={r.mandi} className={`rounded-xl border-2 p-4 ${i === 0 ? 'border-gold-200 bg-gold-50/40' : 'border-primary-50'}`}>
+                <div key={r.mandi} className={`min-w-0 rounded-xl border-2 p-4 ${i === 0 ? 'border-gold-200 bg-gold-50/40' : 'border-primary-50'}`}>
                   <p className="text-xs text-gray-400 mb-0.5">{r.state}</p>
                   <p className="font-semibold text-primary-800 text-sm truncate">{r.mandi}</p>
                   <p className="text-xl font-bold text-gold-700 mt-1.5">₹{r.modal}</p>
