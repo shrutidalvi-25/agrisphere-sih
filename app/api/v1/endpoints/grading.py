@@ -44,6 +44,14 @@ async def run_grading_pipeline(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Agent pipeline completed without generating a grading decision."
             )
+        # Safety net: if the vision step let a non-crop photo through but the
+        # result itself says so, reject it instead of showing a grade card.
+        marker = f"{final_result.get('crop_name', '')} {final_result.get('grade_title', '')}".lower()
+        if any(k in marker for k in ("non-crop", "non crop", "non-agricultural", "no produce", "unidentified", "invalid")):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="This photo doesn't appear to show crop produce. Please upload a clear photo of the actual harvest.",
+            )
         return GradingResponse(**final_result)
     except HTTPException:
         raise

@@ -9,9 +9,20 @@ export async function getBuyersForCrop(crop) {
     .from('offers')
     .select('lots!inner(crop), profiles!offers_buyer_id_profiles_fkey(name, phone)')
     .eq('lots.crop', crop)
-    .limit(3)
+    .limit(30)
 
-  let buyers = (activeBuyers ?? []).map((o) => o.profiles).filter(Boolean)
+  // One buyer can have many offers on the same crop — list each buyer once.
+  const seen = new Set()
+  let buyers = (activeBuyers ?? [])
+    .map((o) => o.profiles)
+    .filter((p) => {
+      if (!p) return false
+      const key = p.phone || p.name
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+    .slice(0, 3)
 
   if (buyers.length === 0) {
     const { data: anyBuyers } = await supabase.from('profiles').select('name, phone').eq('role', 'buyer').limit(3)
