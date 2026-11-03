@@ -72,14 +72,28 @@ async function fetchCommodityRecords(commodity: string, apiKey: string) {
   url.searchParams.set('filters[commodity]', commodity)
   url.searchParams.set('limit', '10')
 
-  let res = await fetch(url.toString())
-  if (res.status === 429) {
-    await sleep(5000)
-    res = await fetch(url.toString())
+  // data.gov.in occasionally refuses the connection outright (ECONNREFUSED).
+  // An uncaught throw here used to crash the whole function with a bare HTTP
+  // 500, so one bad crop lookup killed the entire nightly run. Retry with a
+  // backoff, and treat a crop that still fails as "no records" so the other
+  // crops can still be stored. Only the error message is logged, never the
+  // URL, because the URL contains the API key.
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      let res = await fetch(url.toString())
+      if (res.status === 429) {
+        await sleep(5000)
+        res = await fetch(url.toString())
+      }
+      if (!res.ok) return []
+      const json = await res.json()
+      return Array.isArray(json.records) ? json.records : []
+    } catch (err) {
+      console.error(`Agmarknet fetch failed for ${commodity} (attempt ${attempt}): ${(err as Error).message.split(' for url')[0]}`)
+      if (attempt < 3) await sleep(4000 * attempt)
+    }
   }
-  if (!res.ok) return []
-  const json = await res.json()
-  return Array.isArray(json.records) ? json.records : []
+  return []
 }
 
 function curate(records: any[]) {

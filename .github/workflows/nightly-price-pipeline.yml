@@ -23,12 +23,28 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          response=$(curl -s -w "\n%{http_code}" -X POST "$SUPABASE_URL/functions/v1/refresh-mandi-prices" \
-            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
-          http_code=$(echo "$response" | tail -n1)
-          body=$(echo "$response" | sed '$d')
-          echo "HTTP status: $http_code"
-          echo "Response: $body"
+          # The upstream data.gov.in API sometimes refuses connections from
+          # Supabase's servers (ECONNREFUSED), which makes the function return
+          # HTTP 500. That is transient, so retry a few times before giving up
+          # instead of failing the whole night on the first refusal.
+          for attempt in 1 2 3 4 5; do
+            response=$(curl -s -m 170 -w "\n%{http_code}" -X POST "$SUPABASE_URL/functions/v1/refresh-mandi-prices" \
+              -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+            http_code=$(echo "$response" | tail -n1)
+            body=$(echo "$response" | sed '$d')
+            echo "Attempt $attempt - HTTP status: $http_code"
+            echo "Response: $body"
+            if [ "$http_code" = "200" ] && ! echo "$body" | grep -q '"error"'; then
+              inserted_try=$(echo "$body" | grep -o '"inserted":[0-9]*' | grep -o '[0-9]*')
+              if [ -n "$inserted_try" ] && [ "$inserted_try" -gt 0 ]; then
+                break
+              fi
+            fi
+            if [ "$attempt" -lt 5 ]; then
+              echo "Attempt $attempt did not store any rows; retrying in 120s..."
+              sleep 120
+            fi
+          done
 
           if [ "$http_code" != "200" ]; then
             echo "::error::refresh-mandi-prices returned HTTP $http_code — stopping the pipeline."
