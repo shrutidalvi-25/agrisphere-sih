@@ -23,13 +23,16 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          # The upstream data.gov.in API sometimes refuses connections from
-          # Supabase's servers (ECONNREFUSED), which makes the function return
-          # HTTP 500. That is transient, so retry a few times before giving up
-          # instead of failing the whole night on the first refusal.
-          for attempt in 1 2 3 4 5; do
+          # Supabase runs an Edge Function in the region nearest to the caller.
+          # GitHub's runners are in the US, so the function ran there and
+          # data.gov.in (an Indian government API) refused its connections
+          # (ECONNREFUSED -> HTTP 500). The x-region header pins the function
+          # to Mumbai, next to the database and reachable by data.gov.in.
+          # A few retries remain as a safety net for transient failures.
+          for attempt in 1 2 3; do
             response=$(curl -s -m 170 -w "\n%{http_code}" -X POST "$SUPABASE_URL/functions/v1/refresh-mandi-prices" \
-              -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+              -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+              -H "x-region: ap-south-1")
             http_code=$(echo "$response" | tail -n1)
             body=$(echo "$response" | sed '$d')
             echo "Attempt $attempt - HTTP status: $http_code"
@@ -40,7 +43,7 @@ jobs:
                 break
               fi
             fi
-            if [ "$attempt" -lt 5 ]; then
+            if [ "$attempt" -lt 3 ]; then
               echo "Attempt $attempt did not store any rows; retrying in 120s..."
               sleep 120
             fi
